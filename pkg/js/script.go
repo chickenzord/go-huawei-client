@@ -1,4 +1,4 @@
-package script
+package js
 
 import (
 	"encoding/json"

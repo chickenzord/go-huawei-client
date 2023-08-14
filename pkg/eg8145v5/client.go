@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chickenzord/go-huawei-client/pkg/script"
+	"github.com/chickenzord/go-huawei-client/pkg/js"
 	"github.com/rs/zerolog"
 )
 
@@ -213,7 +213,7 @@ func (c *Client) ListUserDevices() ([]UserDevice, error) {
 		return nil, err
 	}
 
-	s := script.Script{
+	s := js.Script{
 		Name:    "userdevinfo.asp.js",
 		Content: string(jsPayload),
 	}
