@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"rogchap.com/v8go"
+	"github.com/robertkrimen/otto"
 )
 
 // Script
@@ -16,18 +16,28 @@ type Script struct {
 
 // EvalJSON evaluates the script content and call `fnCall` the return value will be JSON-stringified
 // and unmarshaled back to `obj` with `json.Unmarshal`
-func (s *Script) EvalJSON(fnCall string, obj interface{}) error {
-	ctx := v8go.NewContext()
-	if _, err := ctx.RunScript(s.Content, s.Name); err != nil {
-		return err
+func (s *Script) EvalJSON(result interface{}, fnCall string, args ...interface{}) error {
+	vm := otto.New()
+
+	if _, err := vm.Eval(s.Content); err != nil {
+		return fmt.Errorf("error evaluating javascript: %w", err)
 	}
 
-	val, err := ctx.RunScript(fmt.Sprintf("JSON.stringify(%s)", fnCall), "json_stringify.js")
+	if _, err := vm.Eval(s.Content); err != nil {
+		return fmt.Errorf("error evaluating script: %w", err)
+	}
+
+	v, err := vm.Call(fnCall, nil, args...)
+	if err != nil {
+		return fmt.Errorf("error calling %s: %w", fnCall, err)
+	}
+
+	bytes, err := v.MarshalJSON()
 	if err != nil {
 		return err
 	}
 
-	if err := json.Unmarshal([]byte(val.String()), &obj); err != nil {
+	if err := json.Unmarshal(bytes, &result); err != nil {
 		return err
 	}
 

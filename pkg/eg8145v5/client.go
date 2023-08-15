@@ -270,7 +270,7 @@ func (c *Client) ListUserDevices() ([]UserDevice, error) {
 
 	var devices []*UserDevice
 
-	if err := s.EvalJSON("GetUserDevInfoList()", &devices); err != nil {
+	if err := s.EvalJSON(&devices, "GetUserDevInfoList"); err != nil {
 		return nil, err
 	}
 
@@ -316,12 +316,12 @@ func (c *Client) GetResourceUsage() (*ResourceUsage, error) {
 
 	s := js.Script{
 		Name:    "deviceinfo.asp.js",
-		Content: scriptContent,
+		Content: scriptContent + ResourceUsageFuncScript,
 	}
 
 	var usage ResourceUsage
 
-	if err := s.EvalJSON(ResourceUsageJS, &usage); err != nil {
+	if err := s.EvalJSON(&usage, ResourceUsageFuncName); err != nil {
 		return nil, err
 	}
 
