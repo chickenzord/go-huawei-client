@@ -11,9 +11,7 @@ import (
 
 var (
 	root = &cli.App{
-		Commands: []*cli.Command{
-			devices,
-		},
+		Description: "CLI to interact with Huawei eg8145v5 ONT",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "url",
@@ -30,13 +28,21 @@ var (
 				EnvVars: []string{"ROUTER_PASSWORD"},
 			},
 		},
-	}
-	devices = &cli.Command{
-		Name: "devices",
-		Subcommands: []*cli.Command{
+		Commands: []*cli.Command{
 			{
-				Name:   "list",
-				Action: devicesList,
+				Name: "devices",
+				Subcommands: []*cli.Command{
+					{
+						Name:        "list",
+						Description: "List all devices",
+						Action:      devicesList,
+					},
+				},
+			},
+			{
+				Name:        "top",
+				Description: "Show router resources usage",
+				Action:      top,
 			},
 		},
 	}
@@ -70,6 +76,32 @@ func devicesList(ctx *cli.Context) error {
 		for _, d := range devices {
 			fmt.Println(d.HostName, d.DevStatus)
 		}
+
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func top(ctx *cli.Context) error {
+	cfg := &eg8145v5.Config{
+		URL:      ctx.String("url"),
+		Username: ctx.String("username"),
+		Password: ctx.String("password"),
+	}
+
+	client := eg8145v5.NewClient(*cfg)
+
+	if err := client.Session(func(c *eg8145v5.Client) error {
+		usage, err := c.GetResourceUsage()
+		if err != nil {
+			return err
+		}
+
+		fmt.Printf("Memory: %d%%\n", usage.Memory)
+		fmt.Printf("CPU: %d%%\n", usage.CPU)
 
 		return nil
 	}); err != nil {

@@ -23,3 +23,15 @@ type UserDevice struct {
 func (d *UserDevice) Online() bool {
 	return strings.EqualFold(d.DevStatus, "online")
 }
+
+var ResourceUsageJS = `
+{
+	Memory: Number(memUsed.slice(0, -1)),
+	CPU: Number(cpuUsed.slice(0, -1)),
+}
+`
+
+type ResourceUsage struct {
+	Memory int // Memory usage in percent (0-100)
+	CPU    int // CPU usage in percent (0-100)
+}
