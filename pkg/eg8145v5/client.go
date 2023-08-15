@@ -25,9 +25,9 @@ type Client struct {
 	password  string
 }
 
-// NewClient
+// newClient
 // Create a new client.
-func NewClient(baseURL, username, password string) *Client {
+func newClient(baseURL, username, password string) *Client {
 	jar, err := cookiejar.New(nil)
 	if err != nil {
 		panic(err)
@@ -60,6 +60,12 @@ func NewClient(baseURL, username, password string) *Client {
 	}
 }
 
+// NewClient
+// Create a new client.
+func NewClient(cfg Config) *Client {
+	return newClient(cfg.URL, cfg.Username, cfg.Password)
+}
+
 // GetHardwareToken
 // Get the generated random number to be used in authentication
 func (c *Client) GetHardwareToken() (string, error) {
@@ -85,10 +91,30 @@ func (c *Client) GetHardwareToken() (string, error) {
 	return rawToken[len(rawToken)-48:], nil
 }
 
+func (c *Client) Validate() error {
+	if c.baseURL == "" {
+		return fmt.Errorf("URL is not set")
+	}
+
+	if c.username == "" {
+		return fmt.Errorf("username is not set")
+	}
+
+	if c.password == "" {
+		return fmt.Errorf("password is not set")
+	}
+
+	return nil
+}
+
 // Login
 // Authenticate using saved username/password.
 // Authentication cookies will be persisted in the lifetime of Client.
 func (c *Client) Login() error {
+	if err := c.Validate(); err != nil {
+		return fmt.Errorf("config error: %w", err)
+	}
+
 	hwToken, err := c.GetHardwareToken()
 	if err != nil {
 		return err
@@ -139,6 +165,10 @@ func (c *Client) Login() error {
 // Logout
 // End Client's session and clear authentication cookies.
 func (c *Client) Logout() error {
+	if err := c.Validate(); err != nil {
+		return fmt.Errorf("config error: %w", err)
+	}
+
 	hwToken, err := c.GetHardwareToken()
 	if err != nil {
 		return err
