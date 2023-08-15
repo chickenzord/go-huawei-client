@@ -16,12 +16,17 @@ import (
 )
 
 type Config struct {
-	Bind   string `envconfig:"bind" default:"0.0.0.0:8080"`
-	Router struct {
+	BindHost string `envconfig:"bind_host" default:"0.0.0.0"`
+	BindPort int    `envconfig:"bind_port" default:"8080"`
+	Router   struct {
 		URL      string `envconfig:"url"`
 		Username string `envconfig:"username"`
 		Password string `envconfig:"password"`
 	} `envconfig:"router"`
+}
+
+func (c *Config) Bind() string {
+	return fmt.Sprintf("%s:%d", c.BindHost, c.BindPort)
 }
 
 func main() {
@@ -53,12 +58,12 @@ func main() {
 	})))
 
 	log.Info().
-		Str("bind", cfg.Bind).
+		Str("bind", cfg.Bind()).
 		Str("url", cfg.Router.URL).
 		Str("user", cfg.Router.Username).
 		Msg("starting metrics exporter server")
 
-	if err := e.Start(cfg.Bind); err != nil {
+	if err := e.Start(cfg.Bind()); err != nil {
 		fmt.Println()
 		fmt.Println(err)
 		os.Exit(1)
