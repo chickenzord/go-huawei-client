@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/chickenzord/go-huawei-client/pkg/js"
@@ -18,6 +19,7 @@ import (
 type Client struct {
 	jar *cookiejar.Jar
 	h   *http.Client
+	m   sync.Mutex
 
 	baseURL   string
 	userAgent string
@@ -57,6 +59,7 @@ func newClient(baseURL, username, password string) *Client {
 			Timeout:   5 * time.Second,
 			Transport: http.DefaultTransport,
 		},
+		m: sync.Mutex{},
 	}
 }
 
@@ -111,6 +114,9 @@ func (c *Client) Validate() error {
 // Authenticate using saved username/password.
 // Authentication cookies will be persisted in the lifetime of Client.
 func (c *Client) Login() error {
+	c.m.Lock()
+	defer c.m.Unlock()
+
 	if err := c.Validate(); err != nil {
 		return fmt.Errorf("config error: %w", err)
 	}
@@ -165,6 +171,9 @@ func (c *Client) Login() error {
 // Logout
 // End Client's session and clear authentication cookies.
 func (c *Client) Logout() error {
+	c.m.Lock()
+	defer c.m.Unlock()
+
 	if err := c.Validate(); err != nil {
 		return fmt.Errorf("config error: %w", err)
 	}
@@ -231,6 +240,9 @@ func (c *Client) Session(fnSession func(c *Client) error) error {
 // ListUserDevices
 // Get all user devices. Client must be authenticated.
 func (c *Client) ListUserDevices() ([]UserDevice, error) {
+	c.m.Lock()
+	defer c.m.Unlock()
+
 	req, err := http.NewRequest(http.MethodPost, c.baseURL+"/html/bbsp/common/GetLanUserDevInfo.asp", nil)
 	if err != nil {
 		return nil, err
