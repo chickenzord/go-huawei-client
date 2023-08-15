@@ -8,19 +8,16 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
-	"os"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/chickenzord/go-huawei-client/pkg/js"
-	"github.com/rs/zerolog"
 )
 
 type Client struct {
 	jar *cookiejar.Jar
 	h   *http.Client
-	log zerolog.Logger
 
 	baseURL   string
 	userAgent string
@@ -46,8 +43,6 @@ func NewClient(baseURL, username, password string) *Client {
 		},
 	})
 
-	log := zerolog.New(os.Stdout).Level(zerolog.DebugLevel)
-
 	return &Client{
 		userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/115.0",
 		baseURL:   baseURL,
@@ -60,7 +55,6 @@ func NewClient(baseURL, username, password string) *Client {
 			Timeout:   5 * time.Second,
 			Transport: http.DefaultTransport,
 		},
-		log: log,
 	}
 }
 
