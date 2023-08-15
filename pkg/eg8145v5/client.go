@@ -25,6 +25,8 @@ type Client struct {
 	password  string
 }
 
+// NewClient
+// Create a new client.
 func NewClient(baseURL, username, password string) *Client {
 	jar, err := cookiejar.New(nil)
 	if err != nil {
@@ -58,6 +60,8 @@ func NewClient(baseURL, username, password string) *Client {
 	}
 }
 
+// GetHardwareToken
+// Get the generated random number to be used in authentication
 func (c *Client) GetHardwareToken() (string, error) {
 	req, err := http.NewRequest(http.MethodPost, c.baseURL+"/asp/GetRandCount.asp", nil)
 	if err != nil {
@@ -81,6 +85,9 @@ func (c *Client) GetHardwareToken() (string, error) {
 	return rawToken[len(rawToken)-48:], nil
 }
 
+// Login
+// Authenticate using saved username/password.
+// Authentication cookies will be persisted in the lifetime of Client.
 func (c *Client) Login() error {
 	hwToken, err := c.GetHardwareToken()
 	if err != nil {
@@ -123,12 +130,14 @@ func (c *Client) Login() error {
 	}
 
 	if len(res.Cookies()) == 0 {
-		return fmt.Errorf("not set-cookies found")
+		return fmt.Errorf("login failed")
 	}
 
 	return nil
 }
 
+// Logout
+// End Client's session and clear authentication cookies.
 func (c *Client) Logout() error {
 	hwToken, err := c.GetHardwareToken()
 	if err != nil {
@@ -174,7 +183,9 @@ func (c *Client) Logout() error {
 	return nil
 }
 
-func (c *Client) WithSession(fnSession func(c *Client) error) error {
+// Session
+// Run the fnSession function wrapped in Login and Logout
+func (c *Client) Session(fnSession func(c *Client) error) error {
 	if err := c.Login(); err != nil {
 		return err
 	}
@@ -187,6 +198,8 @@ func (c *Client) WithSession(fnSession func(c *Client) error) error {
 	return nil
 }
 
+// ListUserDevices
+// Get all user devices. Client must be authenticated.
 func (c *Client) ListUserDevices() ([]UserDevice, error) {
 	req, err := http.NewRequest(http.MethodPost, c.baseURL+"/html/bbsp/common/GetLanUserDevInfo.asp", nil)
 	if err != nil {
