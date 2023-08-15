@@ -9,6 +9,7 @@ builds:
       - darwin
     flags:
       - -trimpath
+    id: exporter
     main: ./exporter
     binary: eg8145v5-exporter
   - env:
@@ -18,6 +19,7 @@ builds:
       - darwin
     flags:
       - -trimpath
+    id: wei
     main: ./wei
     binary: wei
 
