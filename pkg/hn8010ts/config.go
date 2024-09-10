@@ -1,4 +1,4 @@
-package eg8145v5
+package hn8010ts
 
 type Config struct {
 	URL      string

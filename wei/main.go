@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/chickenzord/go-huawei-client/pkg/eg8145v5"
+	"github.com/chickenzord/go-huawei-client/pkg/hn8010ts"
 	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"
 )
@@ -30,14 +30,9 @@ var (
 		},
 		Commands: []*cli.Command{
 			{
-				Name: "devices",
-				Subcommands: []*cli.Command{
-					{
-						Name:        "list",
-						Description: "List all devices",
-						Action:      devicesList,
-					},
-				},
+				Name:        "opticinfo",
+				Description: "Show optic info",
+				Action:      opticInfo,
 			},
 			{
 				Name:        "top",
@@ -58,24 +53,22 @@ func main() {
 	}
 }
 
-func devicesList(ctx *cli.Context) error {
-	cfg := &eg8145v5.Config{
+func opticInfo(ctx *cli.Context) error {
+	cfg := &hn8010ts.Config{
 		URL:      ctx.String("url"),
 		Username: ctx.String("username"),
 		Password: ctx.String("password"),
 	}
 
-	client := eg8145v5.NewClient(*cfg)
+	client := hn8010ts.NewClient(*cfg)
 
-	if err := client.Session(func(c *eg8145v5.Client) error {
-		devices, err := c.ListUserDevices()
+	if err := client.Session(func(c *hn8010ts.Client) error {
+		opticInfo, err := c.GetOpticInfo()
 		if err != nil {
 			return err
 		}
 
-		for _, d := range devices {
-			fmt.Println(d.HostName, d.DevStatus)
-		}
+		fmt.Printf("RX Level: %.2f TX Level: %.2f\n", opticInfo.RXPower, opticInfo.TXPower)
 
 		return nil
 	}); err != nil {
@@ -84,17 +77,16 @@ func devicesList(ctx *cli.Context) error {
 
 	return nil
 }
-
 func top(ctx *cli.Context) error {
-	cfg := &eg8145v5.Config{
+	cfg := &hn8010ts.Config{
 		URL:      ctx.String("url"),
 		Username: ctx.String("username"),
 		Password: ctx.String("password"),
 	}
 
-	client := eg8145v5.NewClient(*cfg)
+	client := hn8010ts.NewClient(*cfg)
 
-	if err := client.Session(func(c *eg8145v5.Client) error {
+	if err := client.Session(func(c *hn8010ts.Client) error {
 		usage, err := c.GetResourceUsage()
 		if err != nil {
 			return err

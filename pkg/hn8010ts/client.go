@@ -1,4 +1,4 @@
-package eg8145v5
+package hn8010ts
 
 import (
 	"encoding/base64"
@@ -326,4 +326,47 @@ func (c *Client) GetResourceUsage() (*ResourceUsage, error) {
 	}
 
 	return &usage, nil
+}
+
+// GetResourceUsage
+// Get current resource usages. Client must be authenticated.
+func (c *Client) GetOpticInfo() (*OpticInfo, error) {
+	c.m.Lock()
+	defer c.m.Unlock()
+
+	req, err := http.NewRequest(http.MethodGet, c.baseURL+"/html/amp/opticinfo/opticinfo.asp", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("User-Agent", c.userAgent)
+	req.Header.Set("Referer", c.baseURL)
+
+	res, err := c.h.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	scriptContent := doc.Find("script:not([src])").First().Text()
+	if scriptContent == "" {
+		return nil, fmt.Errorf("cannot find the script")
+	}
+
+	s := js.Script{
+		Name:    "opticinfo.asp.js",
+		Content: scriptContent + OpticInfoFuncScript,
+	}
+
+	var opticInfo OpticInfo
+
+	if err := s.EvalJSON(&opticInfo, OpticInfoFuncName); err != nil {
+		return nil, err
+	}
+
+	return &opticInfo, nil
 }

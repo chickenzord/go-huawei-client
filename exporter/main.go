@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/chickenzord/go-huawei-client/pkg/eg8145v5"
+	"github.com/chickenzord/go-huawei-client/pkg/hn8010ts"
 	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/labstack/echo/v4"
@@ -38,7 +38,7 @@ func main() {
 	}
 
 	r := prometheus.NewRegistry()
-	r.MustRegister(NewRouterCollector(&eg8145v5.Config{
+	r.MustRegister(NewRouterCollector(&hn8010ts.Config{
 		URL:      cfg.Router.URL,
 		Username: cfg.Router.Username,
 		Password: cfg.Router.Password,

@@ -1,4 +1,4 @@
-package eg8145v5
+package hn8010ts
 
 import "strings"
 
@@ -39,4 +39,21 @@ var (
 type ResourceUsage struct {
 	Memory int // Memory usage in percent (0-100)
 	CPU    int // CPU usage in percent (0-100)
+}
+
+var (
+	OpticInfoFuncScript = `
+	function getOpticInfo() {
+		return {
+			TXPower: Number(opticInfo.transOpticPower.slice(0, -1)),
+			RXPower: Number(opticInfo.revOpticPower.slice(0, -1)),
+		}
+	}
+	`
+	OpticInfoFuncName = "getOpticInfo"
+)
+
+type OpticInfo struct {
+	TXPower float32
+	RXPower float32
 }
